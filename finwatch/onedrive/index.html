@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>FinWatch sign-in</title>
+<style>body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 32rem; padding: 0 1rem; line-height: 1.5; }</style>
+</head>
+<body>
+<p id="msg">Returning to FinWatch...</p>
+<noscript><p>This page needs JavaScript to return you to FinWatch.</p></noscript>
+<script>
+// Passes a OneDrive sign-in result (code and state, or an error) straight back to FinWatch on the home network.
+// It forwards only to this one fixed address, stores nothing and loads nothing else. The code is useless on its own:
+// FinWatch holds the matching PKCE key.
+(function () {
+  var APP = "https://192.168.1.12:8431/#/backup";
+  var CLOUD = "onedrive";
+  var found = new URLSearchParams(location.hash.slice(1));                  // Microsoft: in the fragment
+  new URLSearchParams(location.search).forEach(function (v, k) { if (!found.has(k)) found.set(k, v); });
+  var out = new URLSearchParams();
+  out.set("cloud", CLOUD);
+  ["code", "state", "error", "error_description"].forEach(function (k) { if (found.get(k)) out.set(k, found.get(k)); });
+  if (!out.get("code") && !out.get("error")) {
+    document.getElementById("msg").textContent = "Nothing to pass on. Start the sign-in from FinWatch (More > Backups).";
+    return;
+  }
+  history.replaceState(null, "", location.pathname);                        // the code leaves this address and history
+  location.replace(APP + "?" + out.toString());
+})();
+</script>
+</body>
+</html>
